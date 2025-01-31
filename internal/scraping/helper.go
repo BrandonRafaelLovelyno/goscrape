@@ -2,6 +2,7 @@ package scraping
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/gocolly/colly/v2"
@@ -9,25 +10,23 @@ import (
 
 func parseDOM(e *colly.HTMLElement) *Node {
 	return &Node{
-		Tag:   e.Name,
-		Class: parseAtrrToSlice(e, "class"),
-		ID:    e.Attr("id"),
-		Text:  e.Text,
-		Rel:   parseAtrrToSlice(e, "rel"),
-		Src:   e.Attr("src"),
-		Href:  e.Attr("href"),
-		Alt:   e.Attr("alt"),
-		Title: e.Attr("title"),
-		Name:  e.Attr("name"),
-		Value: e.Attr("value"),
+		Tag:      e.Name,
+		Class:    parseAtrrToSlice(e, "class"),
+		ID:       e.Attr("id"),
+		Text:     e.Text,
+		Rel:      parseAtrrToSlice(e, "rel"),
+		Src:      e.Attr("src"),
+		Href:     e.Attr("href"),
+		Alt:      e.Attr("alt"),
+		Title:    e.Attr("title"),
+		Name:     e.Attr("name"),
+		Value:    e.Attr("value"),
+		Children: make([]*Node, 0),
 	}
 }
 
-func (s *Scraper) appendParentChildren(parentNode *Node, node *Node) {
-	if parentNode.Children == nil {
-		parentNode.Children = make(map[string][]*Node)
-	}
-
+func (s *Scraper) appendNodeAsChildren(parentNode *Node, node *Node) {
+	parentNode.Text = ""
 	parentNode.Children = append(parentNode.Children, node)
 }
 
@@ -48,4 +47,21 @@ func getParentKey(e *colly.HTMLElement) (string, error) {
 
 func parseAtrrToSlice(e *colly.HTMLElement, attr string) []string {
 	return strings.Split(e.Attr(attr), " ")
+}
+
+func addErrorCallback(c *colly.Collector) {
+	c.OnError(func(r *colly.Response, err error) {
+		log.Printf("error: %v", err)
+
+		err = r.Request.Retry()
+		if err != nil {
+			log.Printf("retry failed: %v", err)
+		}
+	})
+}
+
+func addResponseCallback(c *colly.Collector) {
+	c.OnResponse(func(r *colly.Response) {
+		log.Printf("Response code %d received for URL: %s", r.StatusCode, r.Request.URL)
+	})
 }
