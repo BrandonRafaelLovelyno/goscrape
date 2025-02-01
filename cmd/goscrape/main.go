@@ -3,12 +3,18 @@ package main
 import (
 	"log"
 
+	"github.com/BrandonRafaelLovelyno/goscrape/internal/cli"
 	"github.com/BrandonRafaelLovelyno/goscrape/internal/scraping"
 	"github.com/BrandonRafaelLovelyno/goscrape/pkg/json"
 )
 
 func main() {
-	scraper := scraping.NewScraper("https://proxyway.com/guides/best-websites-to-practice-your-web-scraping-skills")
+	url, err := cli.GetArguments()
+	if err != nil {
+		log.Fatalf("failed to get command arguments: %v", err)
+	}
+
+	scraper := scraping.NewScraper(url)
 
 	jsonData, err := scraper.Scrape()
 	if err != nil {
