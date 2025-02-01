@@ -11,34 +11,44 @@ import (
 
 func NewScraper(url string) *Scraper {
 	return &Scraper{
+		c:   colly.NewCollector(),
 		url: url,
-		root: &Node{
-			Tag: "html",
-		},
-		nodes: make(map[string]*Node),
 	}
 }
 
-func (s *Scraper) Start() error {
-	c := colly.NewCollector()
+func (s *Scraper) Scrape() (*[]byte, error) {
+	nodes := make(map[string]*Node)
+	root := &Node{Tag: "html"}
 
-	addVerboseCallback(c)
-	s.addHtmlCallback(c)
+	s.addVerboseCallback()
+	s.addHtmlCallback(nodes, root)
 
-	c.Visit(s.url)
+	err := s.visitWebsite()
+	if err != nil {
+		return nil, fmt.Errorf("failed to visit website: %v", err)
+	}
 
-	jsonData, _ := s.getJson()
-	log.Println(jsonData)
-	return nil
+	jsonData, error := s.getJson(root)
+	if error != nil {
+		return nil, fmt.Errorf("failed to get json: %v", error)
+	}
+
+	return jsonData, nil
 }
 
-func addVerboseCallback(c *colly.Collector) {
-	addErrorCallback(c)
-	addResponseCallback(c)
+func (s *Scraper) visitWebsite() error {
+	err := s.c.Visit(s.url)
+
+	return err
 }
 
-func (s *Scraper) addHtmlCallback(c *colly.Collector) {
-	c.OnHTML("body *", func(e *colly.HTMLElement) {
+func (s *Scraper) addVerboseCallback() {
+	addErrorCallback(s.c)
+	addResponseCallback(s.c)
+}
+
+func (s *Scraper) addHtmlCallback(nodes map[string]*Node, root *Node) {
+	s.c.OnHTML("body *", func(e *colly.HTMLElement) {
 		if strings.Contains(e.Name, "script") {
 			return
 		}
@@ -51,23 +61,23 @@ func (s *Scraper) addHtmlCallback(c *colly.Collector) {
 			return
 		}
 
-		parentNode, exists := s.nodes[parentKey]
+		parentNode, exists := nodes[parentKey]
 		if !exists {
-			parentNode = s.root
-			s.nodes[parentKey] = s.root
+			parentNode = root
+			nodes[parentKey] = root
 		}
 
 		s.appendNodeAsChildren(parentNode, node)
 
-		s.addToNodes(e, node)
+		s.addToNodes(e, node, nodes)
 	})
 }
 
-func (s *Scraper) getJson() (string, error) {
-	jsonData, err := json.MarshalIndent(s.root, "", "  ")
+func (s *Scraper) getJson(root *Node) (*[]byte, error) {
+	jsonData, err := json.MarshalIndent(root, "", "  ")
 	if err != nil {
-		return "", fmt.Errorf("failed to indent marshaling Json: %v", err)
+		return nil, fmt.Errorf("failed to indent marshaling Json: %v", err)
 	}
 
-	return string(jsonData), nil
+	return &jsonData, nil
 }

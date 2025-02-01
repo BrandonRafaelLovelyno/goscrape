@@ -30,9 +30,9 @@ func (s *Scraper) appendNodeAsChildren(parentNode *Node, node *Node) {
 	parentNode.Children = append(parentNode.Children, node)
 }
 
-func (s *Scraper) addToNodes(e *colly.HTMLElement, node *Node) {
+func (s *Scraper) addToNodes(e *colly.HTMLElement, node *Node, nodes map[string]*Node) {
 	nodeKey := fmt.Sprintf("%p", e.DOM.Get(0))
-	s.nodes[nodeKey] = node
+	nodes[nodeKey] = node
 }
 
 func getParentKey(e *colly.HTMLElement) (string, error) {

@@ -1,9 +1,10 @@
 package scraping
 
+import "github.com/gocolly/colly/v2"
+
 type Scraper struct {
-	url   string
-	root  *Node
-	nodes map[string]*Node
+	url string
+	c   *colly.Collector
 }
 
 type Node struct {
