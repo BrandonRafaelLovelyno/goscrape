@@ -1,85 +1,46 @@
 package scraping
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
-	"strings"
 
-	"github.com/gocolly/colly/v2"
+	"github.com/go-rod/rod"
 )
 
-func NewScraper(url string) *Scraper {
+func NewScraper(url string, header *Header) *Scraper {
 	return &Scraper{
-		c: colly.NewCollector(
-			colly.UserAgent("Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36"),
-		),
-		url: url,
+		url:       url,
+		header:    header,
+		waitNodes: []string{"body"},
 	}
 }
 
-func (s *Scraper) Scrape() (*[]byte, error) {
-	nodes := make(map[string]*Node)
-	root := &Node{Tag: "html"}
+func (s *Scraper) GetHtml() (*string, error) {
+	browser := rod.New().MustConnect()
+	defer browser.MustClose()
 
-	s.addVerboseCallback()
-	s.addHtmlCallback(nodes, root)
+	page := browser.MustPage(s.url)
+	defer page.MustClose()
 
-	err := s.visitWebsite()
+	s.addHeader()
+	s.waitData()
+
+	html, err := page.HTML()
 	if err != nil {
-		return nil, fmt.Errorf("failed to visit website: %v", err)
+		return nil, fmt.Errorf("failed to get page html: %v", err.Error())
 	}
 
-	jsonData, error := s.getJson(root)
-	if error != nil {
-		return nil, fmt.Errorf("failed to get json: %v", error)
+	return &html, nil
+}
+
+func (s *Scraper) addHeader() {
+	cookies := s.getCookies()
+
+	s.page.MustSetCookies(cookies...)
+}
+
+func NewScraperHeader(userAgent string, cookies []Cookie) *Header {
+	return &Header{
+		userAgent: userAgent,
+		cookie:    cookies,
 	}
-
-	return jsonData, nil
-}
-
-func (s *Scraper) visitWebsite() error {
-	err := s.c.Visit(s.url)
-
-	return err
-}
-
-func (s *Scraper) addVerboseCallback() {
-	addErrorCallback(s.c)
-	addResponseCallback(s.c)
-}
-
-func (s *Scraper) addHtmlCallback(nodes map[string]*Node, root *Node) {
-	s.c.OnHTML("body *", func(e *colly.HTMLElement) {
-		if strings.Contains(e.Name, "script") {
-			return
-		}
-
-		node := parseDOM(e)
-
-		parentKey, err := getParentKey(e)
-		if err != nil {
-			log.Println("Error on getting parent key:", err)
-			return
-		}
-
-		parentNode, exists := nodes[parentKey]
-		if !exists {
-			parentNode = root
-			nodes[parentKey] = root
-		}
-
-		s.appendNodeAsChildren(parentNode, node)
-
-		s.addToNodes(e, node, nodes)
-	})
-}
-
-func (s *Scraper) getJson(root *Node) (*[]byte, error) {
-	jsonData, err := json.MarshalIndent(root, "", "  ")
-	if err != nil {
-		return nil, fmt.Errorf("failed to indent marshaling Json: %v", err)
-	}
-
-	return &jsonData, nil
 }
