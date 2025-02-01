@@ -46,7 +46,12 @@ func getParentKey(e *colly.HTMLElement) (string, error) {
 }
 
 func parseAtrrToSlice(e *colly.HTMLElement, attr string) []string {
-	return strings.Split(e.Attr(attr), " ")
+	attrs := strings.Split(e.Attr(attr), " ")
+	if len(attrs) == 1 && attrs[0] == "" {
+		return nil
+	}
+
+	return attrs
 }
 
 func addErrorCallback(c *colly.Collector) {
