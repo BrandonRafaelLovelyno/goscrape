@@ -56,12 +56,7 @@ func parseAtrrToSlice(e *colly.HTMLElement, attr string) []string {
 
 func addErrorCallback(c *colly.Collector) {
 	c.OnError(func(r *colly.Response, err error) {
-		log.Printf("error: %v", err)
-
-		err = r.Request.Retry()
-		if err != nil {
-			log.Printf("retry failed: %v", err)
-		}
+		log.Fatalf("Error: %v\nStatus Code: %d", err, r.StatusCode)
 	})
 }
 
