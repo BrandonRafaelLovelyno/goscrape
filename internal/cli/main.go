@@ -1,18 +1,20 @@
 package cli
 
 import (
+	"flag"
 	"fmt"
-	"os"
 )
 
-func GetArguments() (string, error) {
-	if len(os.Args) < 2 {
-		return "", fmt.Errorf("please provide the website url as the first argument")
+func GetArguments() (*Argument, error) {
+	output := flag.String("o", "output.json", "JSON output file relative directory")
+
+	flag.Parse()
+
+	if len(flag.Args()) == 0 {
+		return nil, fmt.Errorf("no URL provided")
+	} else if len(flag.Args()) > 1 {
+		return nil, fmt.Errorf("too many arguments provided")
 	}
 
-	if len(os.Args) > 2 {
-		return "", fmt.Errorf("please provide only one argument as the website url")
-	}
-
-	return os.Args[1], nil
+	return &Argument{Output: *output, Url: flag.Args()[0]}, nil
 }
