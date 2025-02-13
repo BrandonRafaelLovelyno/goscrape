@@ -18,8 +18,14 @@ func (s *Scraper) getCookies() []*proto.NetworkCookieParam {
 	return cookies
 }
 
-func (s *Scraper) waitData() {
-	for _, node := range s.waitNodes {
-		s.page.MustElement(node)
+func (s *Scraper) setUserAgent() error {
+	err := proto.NetworkSetUserAgentOverride{
+		UserAgent: s.header.userAgent,
+	}.Call(s.page)
+
+	if err != nil {
+		return err
 	}
+
+	return nil
 }
