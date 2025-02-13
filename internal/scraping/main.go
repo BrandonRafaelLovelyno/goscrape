@@ -2,6 +2,7 @@ package scraping
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/go-rod/rod"
@@ -23,13 +24,20 @@ func NewScraperHeader(userAgent string, cookies []Cookie) *Header {
 	}
 }
 
-func (s *Scraper) Scrape() (*[]byte, error) {
+func (s *Scraper) Scrape() (*Node, error) {
 	html, err := s.GetHtml()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get page HTML", err.Error())
 	}
 
-	return nil, nil
+	doc, err := s.readHtmlDocument(html)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read HTML document", err.Error())
+	}
+
+	root := parseHtmlDocument(doc)
+
+	return root, nil
 }
 
 func (s *Scraper) GetHtml() (*string, error) {
@@ -52,6 +60,22 @@ func (s *Scraper) GetHtml() (*string, error) {
 	}
 
 	return &html, nil
+}
+
+func (s *Scraper) readHtmlDocument(html *string) (*goquery.Document, error) {
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(*html))
+	if err != nil {
+		return nil, err
+	}
+
+	return doc, nil
+}
+
+func parseHtmlDocument(doc *goquery.Document) *Node {
+	root := &Node{Tag: "root", Children: make([]*Node, 0)}
+	parseNode(doc.Selection, root)
+
+	return root
 }
 
 func (s *Scraper) addHeader() error {

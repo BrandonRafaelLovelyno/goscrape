@@ -1,6 +1,9 @@
 package scraping
 
 import (
+	"strings"
+
+	"github.com/PuerkitoBio/goquery"
 	"github.com/go-rod/rod/lib/proto"
 )
 
@@ -28,4 +31,37 @@ func (s *Scraper) setUserAgent() error {
 	}
 
 	return nil
+}
+
+func parseNode(node *goquery.Selection, parent *Node) {
+	node.Children().Each(func(i int, child *goquery.Selection) {
+		childNode := makeNode(child)
+		parent.Children = append(parent.Children, childNode)
+		parseNode(child, childNode)
+	})
+}
+
+func makeNode(node *goquery.Selection) *Node {
+	return &Node{
+		ID:       node.AttrOr("id", ""),
+		Tag:      node.Get(0).Data,
+		Text:     node.Text(),
+		Rel:      parseAtrrToSlice(node, "rel"),
+		Href:     node.AttrOr("href", ""),
+		Alt:      node.AttrOr("alt", ""),
+		Title:    node.AttrOr("title", ""),
+		Class:    parseAtrrToSlice(node, "class"),
+		Name:     node.AttrOr("name", ""),
+		Value:    node.AttrOr("value", ""),
+		Children: make([]*Node, 0),
+	}
+}
+
+func parseAtrrToSlice(node *goquery.Selection, attr string) []string {
+	attrs := strings.Split(node.AttrOr(attr, ""), " ")
+	if len(attrs) == 1 && attrs[0] == "" {
+		return nil
+	}
+
+	return attrs
 }
