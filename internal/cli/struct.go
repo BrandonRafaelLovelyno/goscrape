@@ -1,11 +1,11 @@
 package cli
 
 type Argument struct {
-	OutDir         string
-	Url            string
-	WaitedElements *[]string
-	TargetElements *[]string
-	Cookies        *[]Cookie
+	OutDir          string
+	Url             string
+	WaitedSelectors *[]string
+	TargetSelectors *[]string
+	Cookies         *[]Cookie
 }
 
 type FlagArgument struct {

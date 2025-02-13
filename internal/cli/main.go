@@ -57,8 +57,8 @@ func mergeArguments(flagArgument *FlagArgument, configArgument *Config) *Argumen
 	}
 
 	if configArgument != nil {
-		arg.WaitedElements = configArgument.WaitedElements
-		arg.TargetElements = configArgument.TargetElements
+		arg.WaitedSelectors = configArgument.WaitedElements
+		arg.TargetSelectors = configArgument.TargetElements
 		arg.Cookies = configArgument.Cookies
 	}
 

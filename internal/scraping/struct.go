@@ -3,10 +3,11 @@ package scraping
 import "github.com/go-rod/rod"
 
 type Scraper struct {
-	url       string
-	header    *Header
-	page      *rod.Page
-	waitNodes []string
+	url             string
+	header          *Header
+	page            *rod.Page
+	waitedSelectors *[]string
+	targetSelectors *[]string
 }
 
 type Header struct {

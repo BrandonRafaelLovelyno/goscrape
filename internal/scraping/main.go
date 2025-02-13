@@ -4,16 +4,17 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/BrandonRafaelLovelyno/goscrape/internal/cli"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/go-rod/rod"
-	"github.com/go-rod/rod/lib/proto"
 )
 
-func NewScraper(url string, header *Header) *Scraper {
+func NewScraper(url string, header *Header, arg *cli.Argument) *Scraper {
 	return &Scraper{
-		url:       url,
-		header:    header,
-		waitNodes: []string{"body"},
+		url:             url,
+		header:          header,
+		waitedSelectors: arg.WaitedSelectors,
+		targetSelectors: arg.TargetSelectors,
 	}
 }
 
@@ -27,15 +28,15 @@ func NewScraperHeader(userAgent string, cookies []Cookie) *Header {
 func (s *Scraper) Scrape() (*Node, error) {
 	html, err := s.GetHtml()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get page HTML", err.Error())
+		return nil, fmt.Errorf("failed to get page HTML: %v", err.Error())
 	}
 
 	doc, err := s.readHtmlDocument(html)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read HTML document", err.Error())
+		return nil, fmt.Errorf("failed to read HTML document: %v", err.Error())
 	}
 
-	root := parseHtmlDocument(doc)
+	root := s.parseHtmlDocument(doc)
 
 	return root, nil
 }
@@ -49,7 +50,7 @@ func (s *Scraper) GetHtml() (*string, error) {
 
 	err := s.addHeader()
 	if err != nil {
-		return nil, fmt.Errorf("failed to add header: ", err.Error())
+		return nil, fmt.Errorf("failed to add header: %v", err.Error())
 	}
 
 	s.waitData()
@@ -71,9 +72,20 @@ func (s *Scraper) readHtmlDocument(html *string) (*goquery.Document, error) {
 	return doc, nil
 }
 
-func parseHtmlDocument(doc *goquery.Document) *Node {
+func (s *Scraper) parseHtmlDocument(doc *goquery.Document) *Node {
 	root := &Node{Tag: "root", Children: make([]*Node, 0)}
-	parseNode(doc.Selection, root)
+
+	if s.targetSelectors == nil || *s.targetSelectors == nil {
+		return root
+	}
+
+	for _, selector := range *s.targetSelectors {
+		doc.Find(selector).Each(func(i int, node *goquery.Selection) {
+			childNode := makeNode(node)
+			root.Children = append(root.Children, childNode)
+			parseNode(node, childNode)
+		})
+	}
 
 	return root
 }
@@ -92,7 +104,11 @@ func (s *Scraper) addHeader() error {
 }
 
 func (s *Scraper) waitData() {
-	for _, node := range s.waitNodes {
+	if s.waitedSelectors == nil || *s.waitedSelectors == nil {
+		return
+	}
+
+	for _, node := range *s.waitedSelectors {
 		s.page.MustElement(node).MustWaitVisible()
 	}
 }
