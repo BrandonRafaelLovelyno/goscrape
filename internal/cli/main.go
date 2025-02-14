@@ -7,6 +7,8 @@ import (
 )
 
 func GetAllArguments() (*Argument, error) {
+	flag.Parse()
+
 	config, err := getConfigArgument()
 	if err != nil {
 		log.Println("Executing without configuration file")
