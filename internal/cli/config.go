@@ -17,21 +17,10 @@ func attachConfig(confDir *string, cmdInput *CommandInput) error {
 		return fmt.Errorf("failed to extract config json: %v", err.Error())
 	}
 
-	cmdInput.TargetSelectors = config.targetSelectors
-	cmdInput.WaitedSelectors = config.waitedSelectors
+	cmdInput.TargetSelectors = config.TargetSelectors
+	cmdInput.WaitedSelectors = config.WaitedSelectors
 
 	return nil
-}
-
-func unmarshalConfigJson(jsonData []byte) (*Config, error) {
-	var config Config
-
-	err := json.Unmarshal(jsonData, &config)
-	if err != nil {
-		return nil, err
-	}
-
-	return &config, nil
 }
 
 func extractConfigJson(confDir string) (*Config, error) {
@@ -40,10 +29,21 @@ func extractConfigJson(confDir string) (*Config, error) {
 		return nil, fmt.Errorf("failed to get json data: %v", err.Error())
 	}
 
-	config, err := unmarshalConfigJson(*file)
+	config, err := unmarshalConfigJson(file)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal json data: %v", err.Error())
 	}
 
 	return config, nil
+}
+
+func unmarshalConfigJson(jsonData *[]byte) (*Config, error) {
+	var config Config
+
+	err := json.Unmarshal(*jsonData, &config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &config, nil
 }

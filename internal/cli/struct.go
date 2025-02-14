@@ -14,8 +14,8 @@ type CommandArgument struct {
 }
 
 type Config struct {
-	waitedSelectors *[]string `json:"waitedElements"`
-	targetSelectors *[]string `json:"targetElements"`
+	WaitedSelectors *[]string `json:"waitedSelectors"`
+	TargetSelectors *[]string `json:"targetSelectors"`
 	Cookies         *[]Cookie `json:"cookie"`
 }
 

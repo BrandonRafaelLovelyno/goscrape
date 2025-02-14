@@ -53,7 +53,7 @@ func (s *Scraper) parseHtmlDocument(doc *goquery.Document) *Node {
 }
 
 func (s *Scraper) waitData() {
-	if s.waitedSelectors == nil || *s.waitedSelectors == nil {
+	if s.waitedSelectors == nil {
 		return
 	}
 
