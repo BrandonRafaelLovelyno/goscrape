@@ -43,17 +43,10 @@ func (s *Scraper) readHtmlDocument(html *string) (*goquery.Document, error) {
 func (s *Scraper) parseHtmlDocument(doc *goquery.Document) *Node {
 	root := &Node{Tag: "root", Children: make([]*Node, 0)}
 
-	if s.targetSelectors == nil || *s.targetSelectors == nil {
-		parseNodeChildren(doc.Selection, root)
-		return root
-	}
-
-	for _, selector := range *s.targetSelectors {
-		doc.Find(selector).Each(func(i int, el *goquery.Selection) {
-			node := makeNode(el)
-			root.Children = append(root.Children, node)
-			parseNodeChildren(el, node)
-		})
+	if s.targetSelectors == nil {
+		parseWholeHtml(doc, root)
+	} else {
+		s.parseWithSelectors(doc, root)
 	}
 
 	return root

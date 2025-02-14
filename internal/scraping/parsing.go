@@ -6,6 +6,20 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+func parseWholeHtml(doc *goquery.Document, root *Node) {
+	parseNodeChildren(doc.Selection, root)
+}
+
+func (s *Scraper) parseWithSelectors(doc *goquery.Document, root *Node) {
+	for _, selector := range *s.targetSelectors {
+		doc.Find(selector).Each(func(i int, el *goquery.Selection) {
+			node := makeNode(el)
+			root.Children = append(root.Children, node)
+			parseNodeChildren(el, node)
+		})
+	}
+}
+
 func parseNodeChildren(element *goquery.Selection, parent *Node) {
 	element.Children().Each(func(i int, el *goquery.Selection) {
 		childNode := makeNode(el)
