@@ -2,7 +2,7 @@ package cli
 
 import (
 	"encoding/json"
-	pkgj "github.com/BrandonRafaelLovelyno/goscrape/pkg/json"
+	_json "github.com/BrandonRafaelLovelyno/goscrape/pkg/json"
 )
 
 func unmarshalConfigJson(jsonData []byte) (*Config, error) {
@@ -17,7 +17,7 @@ func unmarshalConfigJson(jsonData []byte) (*Config, error) {
 }
 
 func extractConfigJson(confDir string) (*Config, error) {
-	file, err := pkgj.GetJsonData(confDir)
+	file, err := _json.GetJsonData(confDir)
 	if err != nil {
 		return nil, err
 	}

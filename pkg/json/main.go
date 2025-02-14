@@ -1,6 +1,9 @@
 package json
 
-import "os"
+import (
+	"encoding/json"
+	"os"
+)
 
 func GetJsonData(fileDir string) (*[]byte, error) {
 	file, err := os.ReadFile(fileDir)
@@ -9,6 +12,15 @@ func GetJsonData(fileDir string) (*[]byte, error) {
 	}
 
 	return &file, nil
+}
+
+func ConvertToJson(data interface{}) (*[]byte, error) {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return &jsonData, nil
 }
 
 func WriteToJson(jsonData *[]byte, fileDir string) error {

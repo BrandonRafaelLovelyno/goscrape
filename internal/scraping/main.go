@@ -76,14 +76,15 @@ func (s *Scraper) parseHtmlDocument(doc *goquery.Document) *Node {
 	root := &Node{Tag: "root", Children: make([]*Node, 0)}
 
 	if s.targetSelectors == nil || *s.targetSelectors == nil {
+		parseNodeChildren(doc.Selection, root)
 		return root
 	}
 
 	for _, selector := range *s.targetSelectors {
-		doc.Find(selector).Each(func(i int, node *goquery.Selection) {
-			childNode := makeNode(node)
-			root.Children = append(root.Children, childNode)
-			parseNode(node, childNode)
+		doc.Find(selector).Each(func(i int, el *goquery.Selection) {
+			node := makeNode(el)
+			root.Children = append(root.Children, node)
+			parseNodeChildren(el, node)
 		})
 	}
 

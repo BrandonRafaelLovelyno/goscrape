@@ -3,12 +3,13 @@ package cli
 import (
 	"flag"
 	"fmt"
+	"log"
 )
 
 func GetAllArguments() (*Argument, error) {
 	config, err := getConfigArgument()
 	if err != nil {
-		fmt.Println("Executing without configuration file")
+		log.Println("Executing without configuration file")
 	}
 
 	flag, err := getFlagArgument()

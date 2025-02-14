@@ -33,11 +33,11 @@ func (s *Scraper) setUserAgent() error {
 	return nil
 }
 
-func parseNode(node *goquery.Selection, parent *Node) {
-	node.Children().Each(func(i int, child *goquery.Selection) {
-		childNode := makeNode(child)
+func parseNodeChildren(element *goquery.Selection, parent *Node) {
+	element.Children().Each(func(i int, el *goquery.Selection) {
+		childNode := makeNode(el)
 		parent.Children = append(parent.Children, childNode)
-		parseNode(child, childNode)
+		parseNodeChildren(el, childNode)
 	})
 }
 
