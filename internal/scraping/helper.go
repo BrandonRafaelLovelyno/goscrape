@@ -10,6 +10,10 @@ import (
 func (s *Scraper) getCookies() []*proto.NetworkCookieParam {
 	cookies := make([]*proto.NetworkCookieParam, 0)
 
+	if s.header.cookie == nil {
+		return cookies
+	}
+
 	for _, c := range s.header.cookie {
 		cookie := &proto.NetworkCookieParam{
 			Name:  c.Name,

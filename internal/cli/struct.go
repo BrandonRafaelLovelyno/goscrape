@@ -1,6 +1,6 @@
 package cli
 
-type Argument struct {
+type CommandInput struct {
 	OutDir          string
 	Url             string
 	WaitedSelectors *[]string
@@ -8,15 +8,15 @@ type Argument struct {
 	Cookies         *[]Cookie
 }
 
-type FlagArgument struct {
-	OutDir string
-	Url    string
+type CommandArgument struct {
+	OutDir  string
+	confDir *string
 }
 
 type Config struct {
-	WaitedElements *[]string `json:"waitedElements"`
-	TargetElements *[]string `json:"targetElements"`
-	Cookies        *[]Cookie `json:"cookie"`
+	waitedSelectors *[]string `json:"waitedElements"`
+	targetSelectors *[]string `json:"targetElements"`
+	Cookies         *[]Cookie `json:"cookie"`
 }
 
 type Cookie struct {

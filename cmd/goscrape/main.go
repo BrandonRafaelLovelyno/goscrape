@@ -9,30 +9,28 @@ import (
 )
 
 func main() {
-
-	log.Println("Getting Command Arguments")
-	arg, err := cli.GetAllArguments()
+	cmdInput, err := cli.ParseCommandInput()
 	if err != nil {
-		log.Fatalf("failed to get command arguments: %v", err)
+		log.Fatalf("Failed to parse user input: %v", err)
 	}
 
 	header := scraping.NewScraperHeader("Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36", nil)
-	scraper := scraping.NewScraper(arg.Url, header, arg)
+	scraper := scraping.NewScraper(cmdInput.Url, header, cmdInput)
 
 	node, err := scraper.Scrape()
 	if err != nil {
-		log.Fatalf("failed to scrape: %v", err)
+		log.Fatalf("Failed to scrape: %v", err)
 	}
 
 	jsonData, err := json.ConvertToJson(node)
 	if err != nil {
-		log.Fatalf("failed to convert to json: %v", err)
+		log.Fatalf("Failed to convert node to json: %v", err)
 	}
 
-	err = json.WriteToJson(jsonData, arg.OutDir)
+	err = json.WriteToJson(jsonData, cmdInput.OutDir)
 	if err != nil {
-		log.Fatalf("failed to write to json: %v", err)
+		log.Fatalf("Failed to write to json: %v", err)
 	}
 
-	log.Printf("Scraping completed, output written to %s", arg.OutDir)
+	log.Printf("Scraping completed, output written to %s", cmdInput.OutDir)
 }

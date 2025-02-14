@@ -9,12 +9,12 @@ import (
 	"github.com/go-rod/rod"
 )
 
-func NewScraper(url string, header *Header, arg *cli.Argument) *Scraper {
+func NewScraper(url string, header *Header, cmdInput *cli.CommandInput) *Scraper {
 	return &Scraper{
 		url:             url,
 		header:          header,
-		waitedSelectors: arg.WaitedSelectors,
-		targetSelectors: arg.TargetSelectors,
+		waitedSelectors: cmdInput.WaitedSelectors,
+		targetSelectors: cmdInput.TargetSelectors,
 	}
 }
 
@@ -46,6 +46,7 @@ func (s *Scraper) GetHtml() (*string, error) {
 	defer browser.MustClose()
 
 	page := browser.MustPage(s.url)
+	s.page = page
 	defer page.MustClose()
 
 	err := s.addHeader()
@@ -94,7 +95,9 @@ func (s *Scraper) parseHtmlDocument(doc *goquery.Document) *Node {
 func (s *Scraper) addHeader() error {
 	cookies := s.getCookies()
 
-	s.page.MustSetCookies(cookies...)
+	if len(cookies) > 0 {
+		s.page.MustSetCookies(cookies...)
+	}
 
 	err := s.setUserAgent()
 	if err != nil {
